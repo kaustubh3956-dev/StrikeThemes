@@ -16,6 +16,7 @@ const shell =
 
 interface SaleOfferProps {
   expanded: boolean;
+  variant?: "card" | "banner";
   onOpen: () => void;
   onCollapseSoon: () => void;
   onCollapseNow: () => void;
@@ -27,6 +28,7 @@ interface SaleOfferProps {
  */
 export function SaleOffer({
   expanded,
+  variant = "card",
   onOpen,
   onCollapseSoon,
   onCollapseNow,
@@ -65,15 +67,103 @@ export function SaleOffer({
     }
   };
 
-  return (
-    <div
-      ref={body}
-      onPointerEnter={onOpen}
-      onPointerLeave={onCollapseSoon}
-      onFocusCapture={onOpen}
-      onBlurCapture={onCollapseSoon}
-      className="pointer-events-auto"
+  const coupon = (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={`Copy coupon ${sale.coupon}`}
+      className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-dashed border-hairline-strong px-3 py-2.5 font-mono text-[0.68rem] leading-none tracking-[0.1em] text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
     >
+      {copied ? <CheckIcon className="size-3 text-accent" /> : null}
+      {copied ? "Copied" : sale.coupon}
+    </button>
+  );
+
+  const claim = (
+    <Link
+      href={sale.cta.href}
+      className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] bg-fg px-4 py-2.5 text-[0.72rem] font-medium leading-none text-surface-base transition-colors duration-[var(--dur)] ease-[var(--ease-out)] hover:bg-accent"
+    >
+      {sale.cta.label}
+      <ArrowIcon className="size-3.5" />
+    </Link>
+  );
+
+  const handlers = {
+    onPointerEnter: onOpen,
+    onPointerLeave: onCollapseSoon,
+    onFocusCapture: onOpen,
+    onBlurCapture: onCollapseSoon,
+  };
+
+  if (expanded && variant === "banner") {
+    const dot = (
+      <span aria-hidden className="text-fg-muted opacity-35">
+        /
+      </span>
+    );
+
+    return (
+      <div ref={body} {...handlers} className="pointer-events-auto">
+        <aside
+          aria-label={`${sale.kicker} offer`}
+          className="backdrop-blur-md"
+          style={{
+            // A soft wash instead of a bar, so it sits on the page rather than over it.
+            background:
+              "linear-gradient(to bottom, color-mix(in oklab, var(--surface-base) 82%, transparent) 0%, color-mix(in oklab, var(--surface-base) 40%, transparent) 100%)",
+          }}
+        >
+          <div className="shell flex flex-wrap items-center gap-x-4 gap-y-2 py-3.5">
+            <span className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-accent">
+              {sale.kicker}
+            </span>
+            {dot}
+            <span className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-fg-muted">
+              {sale.badge}
+            </span>
+            {dot}
+
+            <span className="font-display text-step-1 leading-none text-fg">
+              {sale.discountLabel}
+            </span>
+            <span className="text-[0.74rem] text-fg-muted">{sale.appliesTo}</span>
+
+            <span className="flex items-center gap-2 font-mono text-[0.56rem] uppercase tracking-[0.16em] text-fg-muted lg:ml-auto">
+              {sale.countdownLabel}
+              <Countdown endsAt={sale.endsAt} />
+            </span>
+            {dot}
+            {coupon}
+            {claim}
+
+            <button
+              type="button"
+              onClick={onCollapseNow}
+              aria-label="Minimise offer"
+              className="shrink-0 text-fg-muted transition-colors duration-[var(--dur-fast)] hover:text-fg"
+            >
+              <MinimiseIcon className="size-4" />
+            </button>
+          </div>
+
+          {/* Hairline that fades at both ends rather than cutting the page in half. */}
+          <div
+            aria-hidden
+            className="h-px w-full"
+            style={{
+              background: "var(--hairline-strong)",
+              maskImage:
+                "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
+            }}
+          />
+        </aside>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={body} {...handlers} className="pointer-events-auto">
       {expanded ? (
         <aside
           aria-label={`${sale.kicker} offer`}
@@ -102,23 +192,8 @@ export function SaleOffer({
           </p>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2">
-            <Link
-              href={sale.cta.href}
-              className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] bg-fg px-4 py-2.5 text-[0.72rem] font-medium leading-none text-surface-base transition-colors duration-[var(--dur)] ease-[var(--ease-out)] hover:bg-accent"
-            >
-              {sale.cta.label}
-              <ArrowIcon className="size-3.5" />
-            </Link>
-
-            <button
-              type="button"
-              onClick={copy}
-              aria-label={`Copy coupon ${sale.coupon}`}
-              className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-dashed border-hairline-strong px-3 py-2.5 font-mono text-[0.68rem] leading-none tracking-[0.1em] text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
-            >
-              {copied ? <CheckIcon className="size-3 text-accent" /> : null}
-              {copied ? "Copied" : sale.coupon}
-            </button>
+            {claim}
+            {coupon}
           </div>
 
           <p className="m-0 mt-4 flex items-center gap-2 border-t border-hairline pt-3 font-mono text-[0.52rem] uppercase tracking-[0.16em] text-fg-muted">

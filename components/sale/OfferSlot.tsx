@@ -26,6 +26,9 @@ const positions: Record<OfferPosition, string> = {
 /** Resting place once the offer has minimised: under the navbar, top left. */
 const DOCK = "top-[clamp(5.25rem,8vw,6.5rem)] left-[var(--gutter)]";
 
+/** Banner spans the top until it docks, clearing the navbar rather than covering it. */
+const BANNER = "top-[clamp(5.25rem,8vw,6.5rem)] inset-x-0";
+
 /**
  * Owns everything shared about the offer: when it appears, where it sits, when
  * it minimises and how it travels to its docked position. Themes only declare a
@@ -147,13 +150,19 @@ export function OfferSlot({ offer }: { offer: ThemeOfferConfig }) {
 
   if (!revealed) return null;
 
+  // A banner collapses into the standard docked card, so the layout only
+  // applies while it is still in its opening position.
+  const asBanner = offer.layout === "banner" && !docked;
+  const placement = docked ? DOCK : asBanner ? BANNER : positions[offer.position];
+
   return (
     <div
-      className={`pointer-events-none fixed ${docked ? DOCK : positions[offer.position]}`}
+      className={`pointer-events-none fixed ${placement}`}
       style={{ zIndex: 40 }}
     >
       <div ref={card}>
         <SaleOffer
+          variant={asBanner ? "banner" : "card"}
           expanded={expanded}
           onOpen={open}
           onCollapseSoon={collapseSoon}

@@ -9,8 +9,13 @@ export type OfferPosition =
   | "top-left"
   | "top-right";
 
+/** How the offer is laid out before it minimises. It always docks as a card. */
+export type OfferLayout = "card" | "banner";
+
 export interface ThemeOfferConfig {
   position: OfferPosition;
+  /** `banner` spans the top of the page; ignores `position` until docked. */
+  layout?: OfferLayout;
   /** Show at once instead of waiting for the theme to call revealOffer(). */
   revealImmediately?: boolean;
 }
