@@ -80,25 +80,6 @@ export function PlayIcon(props: IconProps) {
   );
 }
 
-export function PaletteIcon(props: IconProps) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M12 3.2c-4.9 0-8.8 3.6-8.8 8.1 0 4.5 3.4 7.4 7 7.4 1.6 0 2.3-.9 2.3-1.9 0-.9-.7-1.4-.7-2.2 0-.8.7-1.5 1.7-1.5h1.9c3 0 5.4-2.2 5.4-5 0-3-3.4-4.9-8.8-4.9Z" />
-      <circle cx="7.6" cy="11.4" r="1" fill="currentColor" />
-      <circle cx="10.4" cy="7.6" r="1" fill="currentColor" />
-      <circle cx="15" cy="8.4" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function CloseIcon(props: IconProps) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" />
-    </svg>
-  );
-}
-
 export const featureIcons = {
   spark: SparkIcon,
   ai: AiIcon,

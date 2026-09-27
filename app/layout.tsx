@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { fontVariables } from "./fonts";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
-import { ThemeGallery } from "@/components/theme-gallery/ThemeGallery";
 import { PointerGlow } from "@/components/effects/PointerGlow";
 import { AmbientBackdrop } from "@/components/effects/AmbientBackdrop";
 import "./globals.css";
@@ -20,7 +19,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <AmbientBackdrop />
           <PointerGlow />
           {children}
-          <ThemeGallery />
         </ThemeProvider>
       </body>
     </html>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { themeLoaders } from "@/lib/theme/registry";
 import type { ThemeLayers, ThemeMeta } from "@/lib/theme/types";
-import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 
 const HOVER_INTENT_MS = 120;
 
@@ -22,10 +22,7 @@ export function ThemePreview({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!active || prefersReducedMotion()) {
-      setLayers(null);
-      return;
-    }
+    if (!active || prefersReducedMotion()) return;
 
     const loader = themeLoaders[meta.id];
     if (!loader) return;

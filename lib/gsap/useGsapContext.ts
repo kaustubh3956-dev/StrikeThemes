@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import { initGsap } from "@/lib/gsap/gsap.client";
-import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -42,7 +42,10 @@ export function useGsapContext(
   }: UseGsapContextOptions
 ) {
   const setupRef = useRef(setup);
-  setupRef.current = setup;
+
+  useIsomorphicLayoutEffect(() => {
+    setupRef.current = setup;
+  });
 
   useIsomorphicLayoutEffect(() => {
     const element = scope.current;
@@ -80,6 +83,5 @@ export function useGsapContext(
       mm?.revert();
       ctx.revert();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }

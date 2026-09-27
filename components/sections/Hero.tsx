@@ -31,7 +31,7 @@ export function Hero() {
     <div
       ref={root}
       data-theme-slot="hero"
-      className="relative flex min-h-[calc(100dvh-6.5rem)] flex-col items-center justify-center px-[var(--gutter)] pb-[clamp(3rem,6vw,5rem)] text-center"
+      className="relative flex min-h-[max(26rem,calc(100dvh-15rem))] flex-col items-center justify-center px-[var(--gutter)] pt-[clamp(2.5rem,5vw,5rem)] text-center"
     >
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
       <h1 className="m-0 flex flex-col items-center font-display">

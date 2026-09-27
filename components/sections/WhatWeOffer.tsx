@@ -10,9 +10,13 @@ export function WhatWeOffer() {
     <Section id="offer">
       <SectionHeader title={offer.title} blurb={offer.blurb} align="start" />
 
-      <ul className="mt-12 grid list-none grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-2xl)] border border-hairline bg-hairline p-0 md:grid-cols-2 lg:grid-cols-3">
+      {/* Cell outlines come from each card, so a partly filled last row leaves no phantom block. */}
+      <ul className="mt-12 grid list-none grid-cols-1 overflow-hidden rounded-[var(--radius-2xl)] border border-hairline p-0 md:grid-cols-2 lg:grid-cols-3">
         {offer.courses.map((course) => (
-          <li key={course.href} className="bg-surface-base">
+          <li
+            key={course.href}
+            className="bg-surface-base shadow-[0_0_0_1px_var(--hairline)]"
+          >
             <Link
               href={course.href}
               className="group flex h-full flex-col gap-3 p-7 transition-colors duration-[var(--dur)] hover:bg-merged"

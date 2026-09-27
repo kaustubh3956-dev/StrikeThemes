@@ -43,7 +43,7 @@ export function CodeEditorPanel() {
   );
 
   return (
-    <div className="shell pt-[clamp(1rem,4vw,3.5rem)]">
+    <div className="shell">
       <div
         ref={root}
         data-theme-slot="code-panel"

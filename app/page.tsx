@@ -9,6 +9,7 @@ import { Mentors } from "@/components/sections/Mentors";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
+import { OfferThemes } from "@/components/theme-gallery/OfferThemes";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <Navbar />
       <main className="flex flex-1 flex-col">
         <Hero />
+        <OfferThemes />
         <CodeEditorPanel />
         <MembershipPlans />
         <WhatWeOffer />

@@ -87,7 +87,7 @@ export default function DesignSystemPage() {
       <div className="shell py-[var(--section-y)]">
         <header className="mb-4">
           <p className="font-mono text-step--2 uppercase tracking-[0.22em] text-accent">
-            Phase 0.5 · extraction
+            Token reference
           </p>
           <h1 className="mt-4 font-display text-step-5 text-fg">Design system</h1>
           <p className="mt-4 max-w-[var(--measure)] text-fg-muted">

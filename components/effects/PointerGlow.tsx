@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { initGsap } from "@/lib/gsap/gsap.client";
-import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 
 /**
  * Soft glow trailing the pointer. Drives only `transform` via quickTo, so it

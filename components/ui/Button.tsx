@@ -32,16 +32,3 @@ export function ButtonLink({
     </Link>
   );
 }
-
-export function Button({
-  variant = "primary",
-  className,
-  children,
-  ...rest
-}: { variant?: Variant } & ComponentProps<"button">) {
-  return (
-    <button className={clsx(shared, styles[variant], className)} {...rest}>
-      {children}
-    </button>
-  );
-}

@@ -50,11 +50,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const activeMeta = useMemo(() => getThemeMeta(activeId), [activeId]);
 
   // URL wins over storage so a shared ?theme= link always renders as sent.
+  // Must run post-mount: neither source exists during SSR, so reading them
+  // during render would desync hydration.
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get("theme");
     const stored = window.localStorage.getItem(STORAGE_KEY);
     const candidate = fromUrl ?? stored;
-    if (candidate && themeLoaders[candidate]) setActiveId(candidate);
+    if (candidate && themeLoaders[candidate]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveId(candidate);
+    }
   }, []);
 
   useEffect(() => {
@@ -75,13 +80,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const loader = themeLoaders[activeId];
     if (!loader) return;
 
-    setLayers({});
     loader().then((mod) => {
       if (!cancelled) setLayers(mod.layers);
     });
 
+    // Clearing on teardown stops the outgoing theme painting over the incoming one.
     return () => {
       cancelled = true;
+      setLayers({});
     };
   }, [activeId]);
 

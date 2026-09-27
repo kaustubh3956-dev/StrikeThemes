@@ -44,22 +44,25 @@ export function WhyChooseUs() {
             </span>
           </figcaption>
 
-          <div className="flex h-52 items-end gap-3">
+          <div className="flex h-52 items-stretch gap-3">
             {progress.map((value, i) => (
-              <div key={days[i]} className="flex flex-1 flex-col items-center gap-3">
+              <div key={days[i]} className="flex h-full flex-1 flex-col items-center gap-3">
                 <span data-numeric className="text-step--2 text-fg-muted">
                   {value}%
                 </span>
-                <div
-                  className="w-full rounded-[var(--radius-sm)]"
-                  style={{
-                    height: `${value}%`,
-                    background:
-                      i === progress.length - 1
-                        ? "var(--accent)"
-                        : "var(--surface-merged-strong)",
-                  }}
-                />
+                {/* Percentage heights need a definite parent, hence flex-1 plus absolute fill. */}
+                <div className="relative w-full flex-1">
+                  <div
+                    className="absolute inset-x-0 bottom-0 rounded-[var(--radius-sm)]"
+                    style={{
+                      height: `${value}%`,
+                      background:
+                        i === progress.length - 1
+                          ? "var(--accent)"
+                          : "color-mix(in oklab, var(--fg) 16%, transparent)",
+                    }}
+                  />
+                </div>
                 <span className="text-step--2 text-fg-muted">{days[i]}</span>
               </div>
             ))}
