@@ -80,6 +80,23 @@ export function PlayIcon(props: IconProps) {
   );
 }
 
+export function DownloadIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5" />
+      <path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2" />
+    </svg>
+  );
+}
+
+export function HeartIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 20.2s-7.5-4.6-7.5-9.7a4.2 4.2 0 0 1 7.5-2.6 4.2 4.2 0 0 1 7.5 2.6c0 5.1-7.5 9.7-7.5 9.7Z" />
+    </svg>
+  );
+}
+
 export function MinimiseIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>
