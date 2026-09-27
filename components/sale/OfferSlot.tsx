@@ -10,6 +10,7 @@ import {
 import { initGsap } from "@/lib/gsap/gsap.client";
 import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 import { onRevealOffer } from "@/lib/theme/reveal";
+import { saleIsLive } from "@/lib/content/getContent";
 import type { ThemeOfferConfig, OfferPosition } from "@/lib/theme/types";
 import { SaleOffer } from "./SaleOffer";
 
@@ -148,7 +149,9 @@ export function OfferSlot({ offer }: { offer: ThemeOfferConfig }) {
     };
   }, [docked]);
 
-  if (!revealed) return null;
+  // Checked after the hooks so the sale can be switched off or scheduled
+  // without any theme needing to know.
+  if (!saleIsLive || !revealed) return null;
 
   // A banner collapses into the standard docked card, so the layout only
   // applies while it is still in its opening position.

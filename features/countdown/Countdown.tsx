@@ -5,22 +5,30 @@ import { useCountdown } from "./useCountdown";
 const pad = (value: number) => String(value).padStart(2, "0");
 
 /** Unstyled apart from theme tokens, so any theme can skin it. */
-export function Countdown({ endsAt }: { endsAt: string }) {
+export function Countdown({
+  endsAt,
+  expiredLabel,
+}: {
+  endsAt: string;
+  expiredLabel: string;
+}) {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(endsAt);
 
   if (isExpired) {
     return (
       <span className="font-mono text-step--2 uppercase tracking-[0.18em] text-fg-muted">
-        Offer ended
+        {expiredLabel}
       </span>
     );
   }
 
+  // Seconds are always shown, otherwise a distant deadline looks frozen.
   const units: Array<[string, number]> = days
     ? [
         ["days", days],
         ["hours", hours],
         ["mins", minutes],
+        ["secs", seconds],
       ]
     : [
         ["hours", hours],

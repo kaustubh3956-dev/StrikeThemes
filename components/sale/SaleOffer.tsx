@@ -75,7 +75,7 @@ export function SaleOffer({
       className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-dashed border-hairline-strong px-3 py-2.5 font-mono text-[0.68rem] leading-none tracking-[0.1em] text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
     >
       {copied ? <CheckIcon className="size-3 text-accent" /> : null}
-      {copied ? "Copied" : sale.coupon}
+      {copied ? sale.labels.copied : sale.coupon}
     </button>
   );
 
@@ -131,7 +131,7 @@ export function SaleOffer({
 
             <span className="flex items-center gap-2 font-mono text-[0.56rem] uppercase tracking-[0.16em] text-fg-muted lg:ml-auto">
               {sale.countdownLabel}
-              <Countdown endsAt={sale.endsAt} />
+              <Countdown endsAt={sale.endsAt} expiredLabel={sale.labels.expired} />
             </span>
             {dot}
             {coupon}
@@ -140,7 +140,7 @@ export function SaleOffer({
             <button
               type="button"
               onClick={onCollapseNow}
-              aria-label="Minimise offer"
+              aria-label={sale.labels.minimise}
               className="shrink-0 text-fg-muted transition-colors duration-[var(--dur-fast)] hover:text-fg"
             >
               <MinimiseIcon className="size-4" />
@@ -177,7 +177,7 @@ export function SaleOffer({
             <button
               type="button"
               onClick={onCollapseNow}
-              aria-label="Minimise offer"
+              aria-label={sale.labels.minimise}
               className="-mr-1 shrink-0 text-fg-muted transition-colors duration-[var(--dur-fast)] hover:text-fg"
             >
               <MinimiseIcon className="size-4" />
@@ -199,7 +199,7 @@ export function SaleOffer({
           <p className="m-0 mt-4 flex items-center gap-2 border-t border-hairline pt-3 font-mono text-[0.52rem] uppercase tracking-[0.16em] text-fg-muted">
             {sale.countdownLabel}
             <span className="ml-auto">
-              <Countdown endsAt={sale.endsAt} />
+              <Countdown endsAt={sale.endsAt} expiredLabel={sale.labels.expired} />
             </span>
           </p>
         </aside>
@@ -208,7 +208,7 @@ export function SaleOffer({
           type="button"
           onClick={onOpen}
           aria-expanded={false}
-          aria-label={`Show ${sale.kicker} offer details`}
+          aria-label={sale.labels.showDetails}
           className={clsx(
             shell,
             "flex items-center gap-2.5 px-4 py-2.5 hover:border-[var(--accent-hairline)]"
@@ -221,7 +221,7 @@ export function SaleOffer({
           <span aria-hidden className="text-fg-muted opacity-40">
             |
           </span>
-          <Countdown endsAt={sale.endsAt} />
+          <Countdown endsAt={sale.endsAt} expiredLabel={sale.labels.expired} />
         </button>
       )}
     </div>
