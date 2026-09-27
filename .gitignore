@@ -13,6 +13,9 @@
 # portable toolchain
 /.tools
 
+# generated theme archives
+/public/downloads
+
 # testing
 /coverage
 

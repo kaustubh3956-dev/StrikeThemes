@@ -6,7 +6,8 @@ import { DEFAULT_THEME_ID } from "@/lib/theme/registry";
 import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 import { ThemePreview } from "./ThemePreview";
 import { Section, SectionHeader } from "@/components/ui/Section";
-import { CheckIcon } from "@/components/ui/icons";
+import { DonateButton } from "@/components/ui/DonateButton";
+import { CheckIcon, DownloadIcon } from "@/components/ui/icons";
 
 const tierLabel: Record<string, string> = {
   light: "Light",
@@ -14,8 +15,8 @@ const tierLabel: Record<string, string> = {
   heavy: "Heavy",
 };
 
-/** The sale runs four themes; empty cells keep the row readable until they exist. */
-const GRID_SLOTS = 4;
+/** The sale runs three themes; an empty cell keeps the row readable. */
+const GRID_SLOTS = 3;
 
 export function OfferThemes() {
   const { metas, activeId, setTheme } = useTheme();
@@ -58,57 +59,76 @@ export function OfferThemes() {
           align="start"
         />
 
-        {isThemed ? (
-          <button
-            type="button"
-            onClick={() => setTheme(DEFAULT_THEME_ID)}
-            className="rounded-[var(--radius-pill)] border border-hairline px-5 py-2.5 text-step--1 text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
-          >
-            Clear theme
-          </button>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          {isThemed ? (
+            <button
+              type="button"
+              onClick={() => setTheme(DEFAULT_THEME_ID)}
+              className="rounded-[var(--radius-pill)] border border-hairline px-5 py-2.5 text-step--1 text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
+            >
+              Clear theme
+            </button>
+          ) : null}
+
+          <DonateButton />
+        </div>
       </div>
 
-      <ul className="m-0 mt-12 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="m-0 mt-12 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
         {offers.map((meta) => {
           const isActive = meta.id === activeId;
           return (
             <li key={meta.id}>
-              <button
-                type="button"
-                onClick={() => pick(meta.id)}
-                aria-pressed={isActive}
+              {/* Card is a div so the download link is not nested in the apply button. */}
+              <div
                 className={clsx(
-                  "group flex w-full flex-col rounded-[var(--radius-2xl)] border p-2.5 text-left transition-colors duration-[var(--dur)]",
+                  "group flex h-full flex-col rounded-[var(--radius-2xl)] border p-2.5 transition-colors duration-[var(--dur)]",
                   isActive
                     ? "border-[var(--accent-hairline)] bg-merged"
                     : "border-hairline hover:bg-merged"
                 )}
               >
-                <ThemePreview meta={meta} />
+                <button
+                  type="button"
+                  onClick={() => pick(meta.id)}
+                  aria-pressed={isActive}
+                  className="flex w-full flex-col text-left"
+                >
+                  <ThemePreview meta={meta} />
 
-                <span className="flex items-center gap-2 px-1.5 pt-3">
-                  <span className="truncate text-step--1 font-semibold text-fg">
-                    {meta.name}
+                  <span className="flex items-center gap-2 px-1.5 pt-3">
+                    <span className="truncate text-step--1 font-semibold text-fg">
+                      {meta.name}
+                    </span>
+                    <span className="ml-auto shrink-0 font-mono text-step--2 text-fg-muted">
+                      {tierLabel[meta.tier]}
+                    </span>
                   </span>
-                  <span className="ml-auto shrink-0 font-mono text-step--2 text-fg-muted">
-                    {tierLabel[meta.tier]}
-                  </span>
-                </span>
 
-                <span className="flex items-center gap-1.5 px-1.5 pb-1 pt-1.5 font-mono text-step--2">
-                  {isActive ? (
-                    <span className="flex items-center gap-1.5 text-accent">
-                      <CheckIcon className="size-3.5" />
-                      Applied
-                    </span>
-                  ) : (
-                    <span className="text-fg-muted transition-colors duration-[var(--dur)] group-hover:text-accent">
-                      Apply
-                    </span>
-                  )}
-                </span>
-              </button>
+                  <span className="flex items-center gap-1.5 px-1.5 pt-1.5 font-mono text-step--2">
+                    {isActive ? (
+                      <span className="flex items-center gap-1.5 text-accent">
+                        <CheckIcon className="size-3.5" />
+                        Applied
+                      </span>
+                    ) : (
+                      <span className="text-fg-muted transition-colors duration-[var(--dur)] group-hover:text-accent">
+                        Apply
+                      </span>
+                    )}
+                  </span>
+                </button>
+
+                <a
+                  href={`/downloads/${meta.id}.zip`}
+                  download
+                  aria-label={`Download the ${meta.name} theme as a zip`}
+                  className="mt-3 inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-hairline px-3 py-2 font-mono text-step--2 text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
+                >
+                  <DownloadIcon className="size-3.5" />
+                  Download
+                </a>
+              </div>
             </li>
           );
         })}
