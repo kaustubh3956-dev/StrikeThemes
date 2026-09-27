@@ -10,13 +10,18 @@ import { Testimonials } from "@/components/sections/Testimonials";
 import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
 import { OfferThemes } from "@/components/theme-gallery/OfferThemes";
+import { ThemeStage } from "@/lib/theme/ThemeStage";
 
 export default function Home() {
   return (
     <>
-      <Navbar />
-      <main className="flex flex-1 flex-col">
+      <div className="relative">
+        {/* Themes are confined to this band: navbar + hero only. */}
+        <ThemeStage className="pointer-events-none absolute inset-0 overflow-hidden" />
+        <Navbar />
         <Hero />
+      </div>
+      <main className="flex flex-1 flex-col">
         <OfferThemes />
         <CodeEditorPanel />
         <MembershipPlans />

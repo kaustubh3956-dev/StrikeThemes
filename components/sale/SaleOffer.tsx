@@ -1,0 +1,154 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import clsx from "clsx";
+import { getSale } from "@/lib/content/getContent";
+import { Countdown } from "@/features/countdown/Countdown";
+import { initGsap } from "@/lib/gsap/gsap.client";
+import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
+import { ArrowIcon, CheckIcon, MinimiseIcon } from "@/components/ui/icons";
+
+const sale = getSale();
+
+const shell =
+  "rounded-[var(--radius-2xl)] border border-hairline bg-[color-mix(in_oklab,var(--surface-raised)_72%,transparent)] backdrop-blur-xl transition-[border-color] duration-[var(--dur)]";
+
+interface SaleOfferProps {
+  expanded: boolean;
+  onOpen: () => void;
+  onCollapseSoon: () => void;
+  onCollapseNow: () => void;
+}
+
+/**
+ * Presentational only: OfferSlot owns when this is open and where it sits.
+ * Every visual comes from tokens, so themes restyle it without forking it.
+ */
+export function SaleOffer({
+  expanded,
+  onOpen,
+  onCollapseSoon,
+  onCollapseNow,
+}: SaleOfferProps) {
+  const [copied, setCopied] = useState(false);
+  const body = useRef<HTMLDivElement>(null);
+  const firstRender = useRef(true);
+
+  // Skipped on mount so it does not fight the reveal animation in OfferSlot.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!body.current || prefersReducedMotion()) return;
+
+    const gsap = initGsap();
+    const tween = gsap.fromTo(
+      body.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, ease: "power2.out" }
+    );
+
+    return () => {
+      tween.kill();
+    };
+  }, [expanded]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(sale.coupon);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard can be blocked by permissions; the code stays readable regardless.
+    }
+  };
+
+  return (
+    <div
+      ref={body}
+      onPointerEnter={onOpen}
+      onPointerLeave={onCollapseSoon}
+      onFocusCapture={onOpen}
+      onBlurCapture={onCollapseSoon}
+      className="pointer-events-auto"
+    >
+      {expanded ? (
+        <aside
+          aria-label={`${sale.kicker} offer`}
+          className={clsx(shell, "w-[min(84vw,17rem)] p-4")}
+        >
+          <p className="m-0 flex items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-accent">
+            {sale.kicker}
+            <span className="ml-auto shrink-0 rounded-[var(--radius-pill)] border border-hairline px-2 py-0.5 text-[0.5rem] tracking-[0.12em] text-fg-muted">
+              {sale.badge}
+            </span>
+            <button
+              type="button"
+              onClick={onCollapseNow}
+              aria-label="Minimise offer"
+              className="-mr-1 shrink-0 text-fg-muted transition-colors duration-[var(--dur-fast)] hover:text-fg"
+            >
+              <MinimiseIcon className="size-4" />
+            </button>
+          </p>
+
+          <p className="m-0 mt-3 font-display text-step-2 leading-none text-fg">
+            {sale.discountLabel}
+          </p>
+          <p className="m-0 mt-1.5 text-[0.74rem] text-fg-muted">
+            {sale.appliesTo}
+          </p>
+
+          <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            <Link
+              href={sale.cta.href}
+              className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] bg-fg px-4 py-2.5 text-[0.72rem] font-medium leading-none text-surface-base transition-colors duration-[var(--dur)] ease-[var(--ease-out)] hover:bg-accent"
+            >
+              {sale.cta.label}
+              <ArrowIcon className="size-3.5" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={copy}
+              aria-label={`Copy coupon ${sale.coupon}`}
+              className="inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-dashed border-hairline-strong px-3 py-2.5 font-mono text-[0.68rem] leading-none tracking-[0.1em] text-fg-muted transition-colors duration-[var(--dur)] hover:border-[var(--accent-hairline)] hover:text-fg"
+            >
+              {copied ? <CheckIcon className="size-3 text-accent" /> : null}
+              {copied ? "Copied" : sale.coupon}
+            </button>
+          </div>
+
+          <p className="m-0 mt-4 flex items-center gap-2 border-t border-hairline pt-3 font-mono text-[0.52rem] uppercase tracking-[0.16em] text-fg-muted">
+            {sale.countdownLabel}
+            <span className="ml-auto">
+              <Countdown endsAt={sale.endsAt} />
+            </span>
+          </p>
+        </aside>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-expanded={false}
+          aria-label={`Show ${sale.kicker} offer details`}
+          className={clsx(
+            shell,
+            "flex items-center gap-2.5 px-4 py-2.5 hover:border-[var(--accent-hairline)]"
+          )}
+        >
+          <span className="size-1.5 rounded-full bg-accent" />
+          <span className="font-display text-[0.9rem] leading-none text-fg">
+            {sale.discountLabel}
+          </span>
+          <span aria-hidden className="text-fg-muted opacity-40">
+            |
+          </span>
+          <Countdown endsAt={sale.endsAt} />
+        </button>
+      )}
+    </div>
+  );
+}

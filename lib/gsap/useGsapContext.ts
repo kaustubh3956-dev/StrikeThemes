@@ -9,7 +9,11 @@ const useIsomorphicLayoutEffect =
 
 type Gsap = typeof import("gsap").gsap;
 type MatchMedia = ReturnType<Gsap["matchMedia"]>;
-type Pausable = { pause: () => void; resume: () => void };
+type Pausable = {
+  pause: () => void;
+  resume: () => void;
+  repeat?: () => number;
+};
 
 export interface GsapSetupArgs {
   gsap: Gsap;
@@ -25,6 +29,8 @@ export interface UseGsapContextOptions {
   respectReducedMotion?: boolean;
   /** Pause this context's tweens while the tab is hidden. */
   pauseWhenHidden?: boolean;
+  /** Pause while the scope element is scrolled out of view. */
+  pauseWhenOffscreen?: boolean;
 }
 
 /**
@@ -39,6 +45,7 @@ export function useGsapContext(
     deps = [],
     respectReducedMotion = true,
     pauseWhenHidden = true,
+    pauseWhenOffscreen = true,
   }: UseGsapContextOptions
 ) {
   const setupRef = useRef(setup);
@@ -60,26 +67,56 @@ export function useGsapContext(
       setupRef.current({ gsap, mm, scope: element });
     }, element);
 
-    // Keeping tweens off the ticker while hidden avoids a burst of catch-up work on return.
+    // Keeping tweens off the ticker while hidden or out of view avoids burning
+    // frames on work nobody can see, and a catch-up burst when they return.
     const animations = () =>
       (ctx.data as unknown[]).filter(
         (item) =>
           item instanceof gsap.core.Tween || item instanceof gsap.core.Timeline
       ) as Pausable[];
 
+    // Only looping animations are worth gating. One-shot entrances must always be
+    // allowed to finish: pausing a `from()` tween strands its target at opacity 0,
+    // which leaves the page looking blank if it loaded hidden or out of view.
+    const loops = () =>
+      animations().filter(
+        (anim) => typeof anim.repeat === "function" && anim.repeat() === -1
+      );
+
+    let hidden = document.hidden;
+    let offscreen = false;
+
+    const sync = () => {
+      const shouldPause = hidden || offscreen;
+      loops().forEach((anim) => (shouldPause ? anim.pause() : anim.resume()));
+    };
+
     const onVisibility = () => {
-      const hidden = document.hidden;
-      animations().forEach((anim) => (hidden ? anim.pause() : anim.resume()));
+      hidden = document.hidden;
+      sync();
     };
 
     if (pauseWhenHidden) {
       document.addEventListener("visibilitychange", onVisibility);
     }
 
+    let observer: IntersectionObserver | undefined;
+    if (pauseWhenOffscreen && typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          offscreen = !entries[0].isIntersecting;
+          sync();
+        },
+        { rootMargin: "120px" }
+      );
+      observer.observe(element);
+    }
+
     return () => {
       if (pauseWhenHidden) {
         document.removeEventListener("visibilitychange", onVisibility);
       }
+      observer?.disconnect();
       mm?.revert();
       ctx.revert();
     };

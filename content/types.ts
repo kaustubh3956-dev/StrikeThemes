@@ -75,6 +75,19 @@ export interface FooterColumn {
   links: NavLink[];
 }
 
+export interface SaleOffer {
+  id: string;
+  kicker: string;
+  badge: string;
+  discountLabel: string;
+  appliesTo: string;
+  coupon: string;
+  cta: NavLink;
+  countdownLabel: string;
+  /** ISO 8601 with offset. */
+  endsAt: string;
+}
+
 export interface SiteContent {
   brand: string;
   nav: NavLink[];

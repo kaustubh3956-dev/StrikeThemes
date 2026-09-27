@@ -7,14 +7,19 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   DEFAULT_THEME_ID,
   getThemeMeta,
   themeLoaders,
   themeMetas,
 } from "./registry";
+import { getServerStage, getStage, subscribeStage } from "./ThemeStage";
+import { ThemeEffectLayer } from "./ThemeEffectLayer";
+import { OfferSlot } from "@/components/sale/OfferSlot";
 import type { ThemeLayers, ThemeMeta } from "./types";
 
 interface ThemeContextValue {
@@ -32,48 +37,37 @@ export function useTheme() {
   return ctx;
 }
 
-const STORAGE_KEY = "strike-theme";
-
-function applyTokens(tokens: Record<string, string>, previous: string[]) {
-  const root = document.documentElement;
-  previous.forEach((key) => root.style.removeProperty(key));
+function applyTokens(
+  target: HTMLElement,
+  tokens: Record<string, string>,
+  previous: string[]
+) {
+  previous.forEach((key) => target.style.removeProperty(key));
   Object.entries(tokens).forEach(([key, value]) =>
-    root.style.setProperty(key, value)
+    target.style.setProperty(key, value)
   );
   return Object.keys(tokens);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [activeId, setActiveId] = useState(DEFAULT_THEME_ID);
+  // Bumped on every pick so re-selecting the active theme replays it.
+  const [runId, setRunId] = useState(0);
   const [layers, setLayers] = useState<ThemeLayers>({});
+  const stage = useSyncExternalStore(subscribeStage, getStage, getServerStage);
 
   const activeMeta = useMemo(() => getThemeMeta(activeId), [activeId]);
+  const offer = activeMeta.offer;
 
-  // URL wins over storage so a shared ?theme= link always renders as sent.
-  // Must run post-mount: neither source exists during SSR, so reading them
-  // during render would desync hydration.
+  // Themes are additive only: tokens paint, they never move base layout.
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("theme");
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const candidate = fromUrl ?? stored;
-    if (candidate && themeLoaders[candidate]) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveId(candidate);
-    }
-  }, []);
-
-  useEffect(() => {
-    let appliedKeys: string[] = [];
-    appliedKeys = applyTokens(activeMeta.tokens, []);
-
-    const { bodyClass } = activeMeta;
-    if (bodyClass) document.body.classList.add(bodyClass);
+    const target = stage ?? document.documentElement;
+    const appliedKeys = applyTokens(target, activeMeta.tokens, []);
 
     return () => {
-      applyTokens({}, appliedKeys);
-      if (bodyClass) document.body.classList.remove(bodyClass);
+      applyTokens(target, {}, appliedKeys);
     };
-  }, [activeMeta]);
+  }, [activeMeta, stage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,15 +85,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
   }, [activeId]);
 
+  // Deliberately not persisted: every visit starts on the base site until a theme is picked.
   const setTheme = useCallback((id: string) => {
     if (!themeLoaders[id]) return;
     setActiveId(id);
-    window.localStorage.setItem(STORAGE_KEY, id);
-
-    const url = new URL(window.location.href);
-    if (id === DEFAULT_THEME_ID) url.searchParams.delete("theme");
-    else url.searchParams.set("theme", id);
-    window.history.replaceState({}, "", url);
+    setRunId((n) => n + 1);
   }, []);
 
   const value = useMemo(
@@ -109,16 +99,31 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const { Background, Overlay } = layers;
 
+  // Staged layers share the page's stacking context: background below the hero
+  // content (z-10), overlay above it but still under the navbar (z-30).
+  const renderLayer = (
+    Layer: NonNullable<ThemeLayers["Background"]>,
+    fullPageZ: string,
+    stageZ: number
+  ) => {
+    const node = (
+      <ThemeEffectLayer
+        key={`${activeId}-${runId}`}
+        Layer={Layer}
+        className={
+          stage
+            ? "pointer-events-none absolute inset-0"
+            : "pointer-events-none fixed inset-0"
+        }
+        zIndex={stage ? stageZ : fullPageZ}
+      />
+    );
+    return stage ? createPortal(node, stage) : node;
+  };
+
   return (
     <ThemeContext.Provider value={value}>
-      {Background ? (
-        <div
-          className="pointer-events-none fixed inset-0"
-          style={{ zIndex: "var(--z-theme-bg)" }}
-        >
-          <Background previewMode={false} />
-        </div>
-      ) : null}
+      {Background ? renderLayer(Background, "var(--z-theme-bg)", 0) : null}
 
       <div
         className="relative flex min-h-full flex-1 flex-col"
@@ -127,14 +132,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         {children}
       </div>
 
-      {Overlay ? (
-        <div
-          className="pointer-events-none fixed inset-0"
-          style={{ zIndex: "var(--z-theme-overlay)" }}
-        >
-          <Overlay previewMode={false} />
-        </div>
-      ) : null}
+      {Overlay ? renderLayer(Overlay, "var(--z-theme-overlay)", 20) : null}
+
+      {offer ? <OfferSlot key={`${activeId}-${runId}`} offer={offer} /> : null}
     </ThemeContext.Provider>
   );
 }

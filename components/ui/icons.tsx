@@ -80,6 +80,14 @@ export function PlayIcon(props: IconProps) {
   );
 }
 
+export function MinimiseIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M6 12h12" />
+    </svg>
+  );
+}
+
 export const featureIcons = {
   spark: SparkIcon,
   ai: AiIcon,

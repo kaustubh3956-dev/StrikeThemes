@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import clsx from "clsx";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { DEFAULT_THEME_ID } from "@/lib/theme/registry";
+import { prefersReducedMotion } from "@/lib/motion/reducedMotion";
 import { ThemePreview } from "./ThemePreview";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { CheckIcon } from "@/components/ui/icons";
@@ -14,12 +14,35 @@ const tierLabel: Record<string, string> = {
   heavy: "Heavy",
 };
 
-/** Keeps the grid visually complete while offers are still being defined. */
-const GRID_SLOTS = 8;
+/** The sale runs four themes; empty cells keep the row readable until they exist. */
+const GRID_SLOTS = 4;
 
 export function OfferThemes() {
   const { metas, activeId, setTheme } = useTheme();
-  const [hovered, setHovered] = useState<string | null>(null);
+
+  // The reveal animation plays in the hero, so bring it into view before applying.
+  const pick = (id: string) => {
+    if (window.scrollY < 4 || prefersReducedMotion()) {
+      window.scrollTo({ top: 0 });
+      setTheme(id);
+      return;
+    }
+
+    let done = false;
+
+    const apply = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(fallback);
+      window.removeEventListener("scrollend", apply);
+      setTheme(id);
+    };
+
+    // scrollend is not universal, so a timer backs it up.
+    window.addEventListener("scrollend", apply);
+    const fallback = setTimeout(apply, 700);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const offers = metas.filter((meta) => meta.id !== DEFAULT_THEME_ID);
   const placeholders = Math.max(0, GRID_SLOTS - offers.length);
@@ -31,7 +54,7 @@ export function OfferThemes() {
         <SectionHeader
           title="Offer"
           accent="Themes"
-          blurb="Hover to preview, click to apply."
+          blurb="Click a theme to apply it."
           align="start"
         />
 
@@ -46,19 +69,14 @@ export function OfferThemes() {
         ) : null}
       </div>
 
-      <ul
-        className="m-0 mt-12 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4"
-        onPointerLeave={() => setHovered(null)}
-      >
+      <ul className="m-0 mt-12 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
         {offers.map((meta) => {
           const isActive = meta.id === activeId;
           return (
             <li key={meta.id}>
               <button
                 type="button"
-                onClick={() => setTheme(meta.id)}
-                onPointerEnter={() => setHovered(meta.id)}
-                onFocus={() => setHovered(meta.id)}
+                onClick={() => pick(meta.id)}
                 aria-pressed={isActive}
                 className={clsx(
                   "group flex w-full flex-col rounded-[var(--radius-2xl)] border p-2.5 text-left transition-colors duration-[var(--dur)]",
@@ -67,7 +85,7 @@ export function OfferThemes() {
                     : "border-hairline hover:bg-merged"
                 )}
               >
-                <ThemePreview meta={meta} active={hovered === meta.id} />
+                <ThemePreview meta={meta} />
 
                 <span className="flex items-center gap-2 px-1.5 pt-3">
                   <span className="truncate text-step--1 font-semibold text-fg">
@@ -98,7 +116,7 @@ export function OfferThemes() {
         {Array.from({ length: placeholders }).map((_, i) => (
           <li key={`slot-${i}`}>
             <div
-              className="flex h-full min-h-[11rem] items-center justify-center rounded-[var(--radius-2xl)] border border-dashed border-hairline-strong"
+              className="flex h-full min-h-[14rem] items-center justify-center rounded-[var(--radius-2xl)] border border-dashed border-hairline-strong"
               style={{ opacity: 0.4 }}
             >
               <span className="font-mono text-step--2 uppercase tracking-[0.18em] text-fg-muted">
