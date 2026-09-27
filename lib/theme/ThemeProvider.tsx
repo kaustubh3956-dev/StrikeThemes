@@ -110,6 +110,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       <ThemeEffectLayer
         key={`${activeId}-${runId}`}
         Layer={Layer}
+        holdMs={activeMeta.effectHoldMs}
         className={
           stage
             ? "pointer-events-none absolute inset-0"

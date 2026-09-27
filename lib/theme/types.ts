@@ -36,6 +36,8 @@ export interface ThemeMeta {
   tokens: Record<string, string>;
   /** Three colours shown on the gallery card. */
   swatches: [string, string, string];
+  /** How long the effects hold before fading out. Defaults to 5000ms. */
+  effectHoldMs?: number;
   /** Omit to render no sale offer for this theme. */
   offer?: ThemeOfferConfig;
 }
