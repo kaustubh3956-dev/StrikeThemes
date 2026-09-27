@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { getContent } from "@/lib/content/getContent";
@@ -15,12 +16,14 @@ export function Mentors() {
             key={mentor.name}
             className="flex flex-col gap-6 rounded-[var(--radius-3xl)] border border-hairline bg-merged p-8 sm:flex-row"
           >
-            <div
-              aria-hidden
-              className="grid size-24 shrink-0 place-items-center rounded-[var(--radius-2xl)] border border-[var(--accent-hairline)] font-display text-step-3 text-accent"
-              style={{ background: "var(--accent-soft)" }}
-            >
-              {mentor.initials}
+            <div className="relative size-24 shrink-0 overflow-hidden rounded-[var(--radius-2xl)] border border-hairline-strong">
+              <Image
+                src={mentor.photo}
+                alt={mentor.name}
+                fill
+                sizes="96px"
+                className="object-cover"
+              />
             </div>
 
             <div className="flex flex-col gap-3">
